@@ -110,7 +110,7 @@ class MJaxStripePaymentPanel extends MJaxPanel{
 			
         }
 		$this->lnkSubmit = new MJaxLinkButton($this);
-		$this->lnkSubmit->AddCssClass('btn');
+		$this->lnkSubmit->AddCssClass('btn btn-large');
 		$this->lnkSubmit->Text = 'Submit';
 		/*$this->lnkSubmit->AddAction(
 			new MJaxClickEvent(),
@@ -155,6 +155,9 @@ class MJaxStripePaymentPanel extends MJaxPanel{
 			);
 		}
 	}
+    public function MakeTwoCol(){
+        $this->strTemplate = __MLC_STRIPE_CORE__ . '/mjax/view/MJaxStripePaymentPanel_twoCol.tpl.php';
+    }
 	public function txtAddress1_blur($strFormId, $strControlId){
 		$this->Validate($strControlId);
 	}
