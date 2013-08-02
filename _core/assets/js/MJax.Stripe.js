@@ -1,21 +1,27 @@
 MJax.Stripe = {
 	jForm:null,
-	Init:function(strKey){
+	Init:function(strKey, strFormSelector){
+         MJax.Stripe.jForm = $(strFormSelector);
 		 Stripe.setPublishableKey(strKey);
  	},
     StripeResponseHandler:function(strStatus, objResponse) {
-    	if (objResponse.error) {
-	        // Show the errors on the form
-	        MJax.TriggerControlEvent(objResponse, '#' + jForm.attr('id'), 'stripe_payment_error');
-	    } else {
-    		MJax.TriggerControlEvent(objResponse, '#' + jForm.attr('id'), 'stripe_payment_success');
-        }
+        var objData = {};
+        objData[MJax.Stripe.jForm.attr('id')] = objResponse;
+
+        // Show the errors on the form
+        MJax.TriggerControlEvent(
+            {},
+            '#' + MJax.Stripe.jForm.attr('id'),
+            'stripe_payment_finish',
+            objData
+        );
+
     },
  
     Submit:function() {
         Stripe.createToken(
         	{
-	          number: jForm.find('.card-number').val(),
+	          number: MJax.Stripe.jForm.find('.card-number').val(),
 	          cvc: $('.card-cvc').val(),
 	          exp_month: $('.card-expiry-month').val(),
 	          exp_year: $('.card-expiry-year').val()

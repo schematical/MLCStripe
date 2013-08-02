@@ -142,7 +142,10 @@ class MJaxStripePaymentPanel extends MJaxPanel{
 				new MJaxServerControlAction($objParent,$strSuccessMethod)
 			);
 		}
-		
+		$this->AddAction(
+            new MJaxStripePaymentFinishEvent(),
+            new MJaxServerControlAction($this, 'pnlStripe_stripe_payment_finish')
+        );
 		$this->AddAction(
 			new MJaxStripePaymentErrorEvent(),
 			new MJaxServerControlAction($this, 'pnlStripe_stripe_payment_error')
@@ -170,7 +173,7 @@ class MJaxStripePaymentPanel extends MJaxPanel{
 	public function txtZip_blur($strFormId, $strControlId){
 		$this->Validate($strControlId);
 	}
-	public function Validate($strControlId){
+	public function Validate($strControlId = null){
 		$this->objForm->ClearCtlAlerts();
 		$blnValid = true;
 		if(
@@ -246,9 +249,17 @@ class MJaxStripePaymentPanel extends MJaxPanel{
 			$this->arrFullResponse = null;
 		}
 	}
+    public function pnlStripe_stripe_payment_finish($strFormId, $strControlId, $strActionParameter){
+        if(array_key_exists('error', $this->arrFullResponse)){
+            $this->objForm->TriggerControlEvent($strControlId, 'stripe_payment_error');
+        }else{
+            $this->objForm->TriggerControlEvent($strControlId, 'stripe_payment_success');
+        }
+    }
 	public function pnlStripe_stripe_payment_error(){
 		$this->objForm->ClearCtlAlerts();
 		$this->objForm->ScrollTo($this);
+
 		if(!array_key_exists('param', $this->arrFullResponse['error'])){
 			$this->objForm->Alert($this->arrFullResponse['error']['message']);
 		}else{
