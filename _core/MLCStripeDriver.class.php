@@ -24,14 +24,15 @@ abstract class MLCStripeDriver{
 		}
 		$arrStripeData["card"] = $strToken;
 		$arrStripeData["email"] = $objUser->Email;				  
-		try{
+		//try{
+
 		 	$arrCustomerData = Stripe_Customer::create(
 		 		$arrStripeData
 			);
 			MLCStripeDriver::SaveData($arrCustomerData);
-		}catch(Exception $e){
-			throw new MLCStripeException($e->getMessage(), 0 , $e);
-		}
+		//}catch(Exception $e){
+			//throw new MLCStripeException($e->getMessage(), 0 , $e);
+		//}
 		return $arrCustomerData;
 	}
 	public static function UpdateSubscription($mixPlan){	
@@ -114,7 +115,7 @@ abstract class MLCStripeDriver{
 		){
 			$objStripeData = StripeData::Query(
 				sprintf(
-					'WHERE stripeId = "%s" AND object = "%s" AND mode = "%s"'
+					'WHERE stripeId = "%s" AND mode = "%s"'
 				),
 				true,
 				self::$strMode
