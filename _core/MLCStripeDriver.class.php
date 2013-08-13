@@ -35,7 +35,8 @@ abstract class MLCStripeDriver{
 		//}
 		return $arrCustomerData;
 	}
-	public static function UpdateSubscription($mixPlan){	
+	public static function UpdateSubscription($mixPlan){
+        self::Init();
 		if(
 			(is_string($mixPlan)) ||
 			(is_numeric($mixPlan))
@@ -66,6 +67,7 @@ abstract class MLCStripeDriver{
 		return $objStripeCustomer;
 	}
 	public static function LoadUserStripeData($strType, $objUser = null){
+        self::Init();
 		if(is_null($objUser)){
 			$objUser = MLCAuthDriver::User();
 			if(is_null($objUser)){
@@ -74,17 +76,71 @@ abstract class MLCStripeDriver{
 		}
 		$arrData = StripeData::Query(
 			sprintf(
-				'WHERE object = "%s" AND idUser = %s AND mode = "%s"',
+				'WHERE object = "%s" AND idAuthUser = %s AND mode = "%s"',
 				$strType,
 				$objUser->IdUser,
 				MLCStripeDriver::$strMode
 			)
 		);
-		return $arrData;
+
+        $arrReturn = array();
+        foreach($arrData as $intIndex => $objStripeData){
+            $arrReturn[] = $objStripeData->RawObject();
+        }
+		return $arrReturn;
 		
 	}
+    public static function UserCustomer($objUser = null){
+        //Load the user
+        if(is_null($objUser)){
+            $objUser = MLCAuthDriver::User();
+        }
+        $arrData = self::LoadUserStripeData(
+            'customer',
+            $objUser
+        );
+
+        if(count($arrData) == 0){
+            return null;
+        }
+        if(count($arrData) > 1){
+            //IDK
+            return $arrData[count($arrData) - 1];
+        }
+        return $arrData[0];
+    }
+    public static function ChargeUser($intAmount, $objUser = null){
+        //Load the user
+        if(is_null($objUser)){
+            $objUser = MLCAuthDriver::User();
+        }
+        if(is_null($objUser)){
+            throw new MLCStripeException("No Authenticated User. Cannot create charge");
+        }
+        $objCustomer = self::UserCustomer();
+
+        if(is_null($objCustomer)){
+            throw new MLCStripeException("Could not charge. No customer object found");
+        }
+
+        $objCharge = Stripe_Charge::create(array(
+                "amount"   => $intAmount * 100,
+                "currency" => "usd",
+                "customer" => $objCustomer->id)
+        );
+        $objStripeData = self::SaveData($objCharge);
+        return $objStripeData;
+
+    }
 	public static function LoadStripData($strStripeId, $strType){
-		
+        $arrData = StripeData::Query(
+            sprintf(
+                'WHERE stripeId = "%s" AND object = "%s"',
+                $strStripeId,
+                $strType
+            )
+        );
+        return $arrData;
 	}
 	public static function SaveData($mixData, $objParentStripeData = null){
 		$strUrl = null;
@@ -115,10 +171,12 @@ abstract class MLCStripeDriver{
 		){
 			$objStripeData = StripeData::Query(
 				sprintf(
-					'WHERE stripeId = "%s" AND mode = "%s"'
+					'WHERE stripeId = "%s" AND object = "%s" AND mode = "%s"',
+                    $strStripeId,
+                    $strStripeObject,
+                    self::$strMode
 				),
-				true,
-				self::$strMode
+				true
 			);
 		}
 		if(is_null($objStripeData)){
@@ -137,7 +195,7 @@ abstract class MLCStripeDriver{
 		if(!is_null($strUrl)){
 			$objStripeData->Instance_url = $strUrl;
 		}
-		$objStripeData->IdUser = MLCAuthDriver::IdUser();
+		$objStripeData->IdAuthUser = MLCAuthDriver::IdUser();
 		$objStripeData->Data = json_encode($arrData);
 		$objStripeData->CreDate = MLCDateTime::Now();
 		$objStripeData->Mode = self::$strMode;
@@ -147,6 +205,7 @@ abstract class MLCStripeDriver{
 				// MLCStripeDriver::SaveData($mixData, $objStripeData);
 			}
 		}
+        return $objStripeData;
 		
 	}
 	public static function LoadChargeCollection($arrParams = array()){

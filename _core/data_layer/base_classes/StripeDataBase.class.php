@@ -56,9 +56,9 @@ class StripeDataBase extends BaseEntity {
         $xmlStr.= "<idStripeData>";
         $xmlStr.= $this->idStripeData;
         $xmlStr.= "</idStripeData>";
-        $xmlStr.= "<idUser>";
-        $xmlStr.= $this->idUser;
-        $xmlStr.= "</idUser>";
+        $xmlStr.= "<idAuthUser>";
+        $xmlStr.= $this->idAuthUser;
+        $xmlStr.= "</idAuthUser>";
         $xmlStr.= "<idParentStripeData>";
         $xmlStr.= $this->idParentStripeData;
         $xmlStr.= "</idParentStripeData>";
@@ -172,7 +172,7 @@ class StripeDataBase extends BaseEntity {
         $arrReturn = array();
         $arrReturn['_ClassName'] = "StripeData";
         $arrReturn['idStripeData'] = $this->idStripeData;
-        $arrReturn['idUser'] = $this->idUser;
+        $arrReturn['idAuthUser'] = $this->idAuthUser;
         $arrReturn['idParentStripeData'] = $this->idParentStripeData;
         $arrReturn['stripeId'] = $this->stripeId;
         $arrReturn['creDate'] = $this->creDate;
@@ -199,10 +199,10 @@ class StripeDataBase extends BaseEntity {
                 }
                 return null;
             break;
-            case ('IdUser'):
-            case ('idUser'):
-                if (array_key_exists('idUser', $this->arrDBFields)) {
-                    return $this->arrDBFields['idUser'];
+            case ('IdAuthUser'):
+            case ('idAuthUser'):
+                if (array_key_exists('idAuthUser', $this->arrDBFields)) {
+                    return $this->arrDBFields['idAuthUser'];
                 }
                 return null;
             break;
@@ -267,9 +267,9 @@ class StripeDataBase extends BaseEntity {
                 case ('idStripeData'):
                     $this->arrDBFields['idStripeData'] = $strValue;
                 break;
-                case ('IdUser'):
-                case ('idUser'):
-                    $this->arrDBFields['idUser'] = $strValue;
+                case ('IdAuthUser'):
+                case ('idAuthUser'):
+                    $this->arrDBFields['idAuthUser'] = $strValue;
                 break;
                 case ('IdParentStripeData'):
                 case ('idParentStripeData'):
