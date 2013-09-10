@@ -9,5 +9,6 @@ require_once(__MLC_STRIPE_CORE__ . '/_exception.inc.php');
 if(defined('__MJAX__')){
 	require_once(__MLC_STRIPE_CORE__ . '/mjax/_event.inc.php');
 	MLCApplicationBase::$arrClassFiles['MJaxStripePaymentPanel'] = __MLC_STRIPE_CORE__ . '/mjax/ctl/MJaxStripePaymentPanel.class.php';
+    MLCApplicationBase::$arrClassFiles['MJaxStripeCardSelectPanel'] = __MLC_STRIPE_CORE__ . '/mjax/ctl/MJaxStripeCardSelectPanel.class.php';
 
 }

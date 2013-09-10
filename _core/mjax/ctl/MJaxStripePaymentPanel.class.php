@@ -224,6 +224,17 @@ class MJaxStripePaymentPanel extends MJaxPanel{
 			}
 			$blnValid = false;
 		}
+
+        if(
+            ($blnValid) &&
+            (is_null(MLCAuthDriver::User()))
+        ){
+            $this->objForm->CtlAlert(
+                $this->txtCardNum,
+                "Please complete signup and try again"
+            );
+            $blnValid = false;
+        }
 		$this->objForm->ForceRenderFormState = false;
 		$this->objForm->SkipMainWindowRender = true;
 		return $blnValid;

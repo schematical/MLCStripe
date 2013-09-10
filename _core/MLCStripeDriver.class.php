@@ -16,7 +16,7 @@ abstract class MLCStripeDriver{
 		if(is_null($objUser)){
 			$objUser = MLCAuthDriver::User();
 			if(is_null($objUser)){
-				throw new MLCStripeException("Must have a user to create a Stripe Customer");
+				throw new MLCStripeInvalidUserException("Must have a user to create a Stripe Customer");
 			}
 		}
 		if(is_null($arrStripeData)){
@@ -53,19 +53,27 @@ abstract class MLCStripeDriver{
 		$objData = $objStripeCustomer->updateSubscription($arrPlan);
 		MLCStripeDriver::SaveData($objData);		
 	}
-	public static function GetUserCustomerObject($objUser = null){
+	public static function GetUserCustomerObject($objUser = null, $blnReturnArray = false){
 		self::Init();		
 		$arrStripeData = MLCStripeDriver::LoadUserStripeData(
-			MLCStripeType::CUSTOMER
+			MLCStripeType::CUSTOMER,
+            $objUser
 		);
 		if(count($arrStripeData) == 0){
 			throw new MLCStripeException("No valid stripe customer object on file");
 		}
-		$objStripeData = $arrStripeData[0];
-		$objStripeCustomer = Stripe_Customer::constructFrom(json_decode($objStripeData->Data, true));
-		$objStripeCustomer->refresh();
-		return $objStripeCustomer;
+        $arrReturn = array();
+        foreach($arrStripeData as $objStripeData){
+            $objStripeCustomer = Stripe_Customer::constructFrom(json_decode($objStripeData->Data, true));
+            $objStripeCustomer->refresh();
+            $arrReturn[] = $objStripeCustomer;
+        }
+        if(!$blnReturnArray){
+            return $arrReturn[0];
+        }
+		return $arrReturn;
 	}
+
 	public static function LoadUserStripeData($strType, $objUser = null){
         self::Init();
 		if(is_null($objUser)){
@@ -113,11 +121,20 @@ abstract class MLCStripeDriver{
         //Load the user
         if(is_null($objUser)){
             $objUser = MLCAuthDriver::User();
+            if(is_null($objUser)){
+                throw new MLCStripeException("No Authenticated User. Cannot create charge");
+            }
+            $objCustomer = self::UserCustomer();
+        }elseif(
+            ($objUser instanceof Stripe_Object) &&
+            ($objUser->object == 'customer')
+        ){
+            $objCustomer = $objUser;
+        }else{
+            throw new Exception("Invalid data passed in Where AuthUser or Stripe_Object is required, Parameter 2");
         }
-        if(is_null($objUser)){
-            throw new MLCStripeException("No Authenticated User. Cannot create charge");
-        }
-        $objCustomer = self::UserCustomer();
+
+
 
         if(is_null($objCustomer)){
             throw new MLCStripeException("Could not charge. No customer object found");
